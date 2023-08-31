@@ -46,6 +46,7 @@ let app =
         memory_cache
         use_static "public"
         use_gzip
+        url "0.0.0.0:5000"
     }
 
 [<EntryPoint>]
