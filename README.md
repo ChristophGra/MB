@@ -51,3 +51,13 @@ You will find more documentation about the used F# components at the following p
 * [Saturn](https://saturnframework.org/)
 * [Fable](https://fable.io/docs/)
 * [Elmish](https://elmish.github.io/elmish/)
+
+
+## Starting the server in Rider
+
+Start the client via the following command in the project root directory
+```bash
+npm run start
+```
+
+Start the server via the provided "Server" launch configuration
