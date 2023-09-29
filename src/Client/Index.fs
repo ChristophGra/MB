@@ -14,27 +14,11 @@ type Page =
     | Home
     | MurderBingo of Guid
 type Model = { CurrentPath: Page }
-type Route =
-    | Home
-    | MurderBingo of Guid
 
-let parseGuid (str:string) =
-    match Guid.TryParse str with
-    | true, g -> Ok g
-    | _ -> Error ()
-let route: Parser<Route>=
-    oneOf
-        [ map MurderBingo (s "bingo" </> (custom "" parseGuid ))
-          map Home top ]
 type Msg =
     | DoNothing
     | Navigate of string
 
-let urlUpdate (result:Route) model: Model * Cmd<Msg> =
-    match result, model.CurrentPath with
-    | Home, Page.Home -> model, Cmd.none
-    | MurderBingo newId, Page.MurderBingo oldId -> model, Cmd.none
-    | _ -> model, Cmd.none
 
 let init () : Model * Cmd<Msg> =
     let model = { CurrentPath = Page.Home}
