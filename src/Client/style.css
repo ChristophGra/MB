@@ -1,0 +1,9 @@
+﻿
+body {
+    margin: 0;
+}
+.navbar {
+    border-width: 1px;
+    border-style: solid;
+    border-color: red;
+}

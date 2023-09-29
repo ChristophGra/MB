@@ -1,103 +1,80 @@
 module Index
 
+open System
 open Elmish
+open Fable.React.Props
 open Fable.Remoting.Client
+open Feliz
+open Feliz.style
+open Microsoft.FSharp.Collections
 open Shared
+open Elmish.Navigation
+open Elmish.UrlParser
+type Page =
+    | Home
+    | MurderBingo of Guid
+type Model = { CurrentPath: Page }
+type Route =
+    | Home
+    | MurderBingo of Guid
 
-type Model = { Stub: unit }
-
+let parseGuid (str:string) =
+    match Guid.TryParse str with
+    | true, g -> Ok g
+    | _ -> Error ()
+let route: Parser<Route>=
+    oneOf
+        [ map MurderBingo (s "bingo" </> (custom "" parseGuid ))
+          map Home top ]
 type Msg =
-    | Stub of unit
+    | DoNothing
+    | Navigate of string
 
-let stubApi =
-    Remoting.createApi ()
-    |> Remoting.withRouteBuilder Route.builder
-    |> Remoting.buildProxy<IStubApi>
+let urlUpdate (result:Route) model: Model * Cmd<Msg> =
+    match result, model.CurrentPath with
+    | Home, Page.Home -> model, Cmd.none
+    | MurderBingo newId, Page.MurderBingo oldId -> model, Cmd.none
+    | _ -> model, Cmd.none
 
 let init () : Model * Cmd<Msg> =
-    let model = { Stub = () }
+    let model = { CurrentPath = Page.Home}
 
-    let cmd = Cmd.OfAsync.perform stubApi.stub () Stub
+    let cmd = Cmd.ofMsg DoNothing
 
     model, cmd
 
 let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     match msg with
-    | Stub _ -> model, Cmd.none
-
-
+    |DoNothing -> model, Cmd.none
+    | Navigate path -> model, Cmd.none
 open Feliz
 open Feliz.Bulma
-
-let navBrand =
-    Bulma.navbarBrand.div [
-        Bulma.navbarItem.a [
-            prop.href "https://safe-stack.github.io/"
-            navbarItem.isActive
-            prop.children [
-                Html.img [
-                    prop.src "/favicon.png"
-                    prop.alt "Logo"
-                ]
-            ]
-        ]
-    ]
-
-let containerBox (model: Model) (dispatch: Msg -> unit) =
-    Bulma.box [
-        Bulma.content [
-            Html.ol [
-            ]
-        ]
-        Bulma.field.div [
-            field.isGrouped
-            prop.children [
-                Bulma.control.p [
-                    control.isExpanded
-                    prop.children [
-                        Bulma.input.text [
-                        ]
-                    ]
-                ]
-                Bulma.control.p [
-                    Bulma.button.a [
-                        color.isPrimary
-                        prop.text "Add"
-                    ]
-                ]
-            ]
-        ]
-    ]
-
-let view (model: Model) (dispatch: Msg -> unit) =
-    Bulma.hero [
-        hero.isFullHeight
-        color.isPrimary
+open Feliz.Styles
+let debugBorder =
+    style.border (2, borderStyle.solid,  "red")
+let NavBar (dispatch: Msg -> unit) =
+    Html.div [
+        prop.className "navbar"
         prop.style [
-            style.backgroundSize "cover"
-            style.backgroundImageUrl "https://unsplash.it/1200/900?random"
-            style.backgroundPosition "no-repeat center center fixed"
+            display.block
+            flexDirection.row
+            style.width (length.percent 100)
         ]
         prop.children [
-            Bulma.heroHead [
-                Bulma.navbar [
-                    Bulma.container [ navBrand ]
-                ]
-            ]
-            Bulma.heroBody [
-                Bulma.container [
-                    Bulma.column [
-                        column.is6
-                        column.isOffset3
-                        prop.children [
-                            Bulma.title [
-                                text.hasTextCentered
-                                prop.text "Webopoly"
-                            ]
-                            containerBox model dispatch
-                        ]
-                    ]
-                ]
+            Html.text "navbar"
+        ]
+    ]
+let view (model: Model) (dispatch: Msg -> unit) =
+    Html.div [
+        prop.style [
+            display.flex
+            flexDirection.column
+        ]
+        prop.children [
+            NavBar dispatch
+            Html.div [
+                prop.text "abc"
             ]
         ]
+
     ]
