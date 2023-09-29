@@ -9,18 +9,19 @@ const CONFIG = {
     fsharpEntry: './src/Client/output/App.js',
     outputDir: './deploy/public',
     assetsDir: './src/Client/public',
+    cssEntry: './src/Client/style.css',
     devServerPort: 8080,
     // When using webpack-dev-server, you may need to redirect some calls
     // to a external API server. See https://webpack.js.org/configuration/dev-server/#devserver-proxy
     devServerProxy: {
         // redirect requests that start with /api/ to the server on port 5000
         '/api/**': {
-            target: 'http://localhost:' + (process.env.SERVER_PROXY_PORT || '5000'),
+            target: 'http://0.0.0.0:' + (process.env.SERVER_PROXY_PORT || '5000'),
             changeOrigin: true
         },
         // redirect websocket requests that start with /socket/ to the server on the port 5000
         '/socket/**': {
-            target: 'http://localhost:' + (process.env.SERVER_PROXY_PORT || '5000'),
+            target: 'http://0.0.0.0:' + (process.env.SERVER_PROXY_PORT || '5000'),
             ws: true
         }
     }
@@ -59,7 +60,7 @@ module.exports = function(env, arg) {
         // with the code because the MiniCssExtractPlugin will extract the
         // CSS in a separate files.
         entry: {
-            app: resolve(config.fsharpEntry)
+            app: [resolve(config.fsharpEntry), resolve(config.cssEntry)]
         },
         // Add a hash to the output file name in production
         // to prevent browser caching if code changes
