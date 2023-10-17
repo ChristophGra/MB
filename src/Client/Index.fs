@@ -1,36 +1,72 @@
 module Index
 
 open System
+open Client
 open Elmish
-open Fable.React.Props
-open Fable.Remoting.Client
 open Feliz
 open Feliz.style
-open Microsoft.FSharp.Collections
-open Shared
-open Elmish.Navigation
-open Elmish.UrlParser
+open Fulma
+
 type Page =
     | Home
-    | MurderBingo of Guid
-type Model = { CurrentPath: Page }
+    | MurderBingoOverview
+type PageModel =
+    | Home
+    | MurderBingoOverview of MurderBingoOverview.Model
+
+
+type Model =
+    {
+        CurrentPage: PageModel
+        CurrentUserKey: Guid option
+    }
 
 type Msg =
-    | DoNothing
-    | Navigate of string
+    | MurderBingoOverviewMsg of MurderBingoOverview.Msg
+    | SwitchPage of Page
 
 
 let init () : Model * Cmd<Msg> =
-    let model = { CurrentPath = Page.Home}
+    let model = { CurrentPage = PageModel.Home; CurrentUserKey = option.None}
 
-    let cmd = Cmd.ofMsg DoNothing
+    let cmd = Cmd.none
 
     model, cmd
 
 let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
+    let isSamePage newpage oldpage =
+        match newpage, oldpage with
+        | Page.Home, Home -> true
+        | Page.MurderBingoOverview, MurderBingoOverview _ -> true
+        | _ -> false
+
+    let pageManagement newPage currentPage =
+        if isSamePage newPage currentPage then
+            model, Cmd.none
+        else
+            match newPage with
+            | Page.Home -> {model with CurrentPage = PageModel.Home}, Cmd.none
+            | Page.MurderBingoOverview ->
+                let adapter = Helpers.createAdapter MurderBingoOverview MurderBingoOverviewMsg
+                let newSubModel, newMsg = adapter (MurderBingoOverview.initial model.CurrentUserKey)
+                {model with CurrentPage = newSubModel}, newMsg
+
+    let currentPage = model.CurrentPage
+
     match msg with
-    |DoNothing -> model, Cmd.none
-    | Navigate path -> model, Cmd.none
+    | MurderBingoOverviewMsg mbmsg->
+        match currentPage with
+        | MurderBingoOverview page ->
+            let adapter = Helpers.createAdapter MurderBingoOverview MurderBingoOverviewMsg
+            let newSubModel, newMsg = adapter <| MurderBingoOverview.update mbmsg page
+            {model with CurrentPage = newSubModel}, newMsg
+        | _ ->
+            model, Cmd.none
+    | SwitchPage newPage ->
+        pageManagement newPage currentPage
+
+
+
 open Feliz
 open Feliz.Bulma
 open Feliz.Styles
@@ -40,12 +76,25 @@ let NavBar (dispatch: Msg -> unit) =
     Html.div [
         prop.className "navbar"
         prop.style [
-            display.block
+            display.flex
             flexDirection.row
+
+            style.gap 10
             style.width (length.percent 100)
         ]
         prop.children [
-            Html.text "navbar"
+            Html.div [
+                prop.onClick (fun _ -> dispatch (Msg.SwitchPage Page.Home))
+                prop.children [
+                    Html.text "Home"
+                ]
+            ]
+            Html.div [
+                prop.onClick (fun _ -> dispatch (Msg.SwitchPage Page.MurderBingoOverview))
+                prop.children [
+                    Html.text "Murder Bingo"
+                ]
+            ]
         ]
     ]
 let view (model: Model) (dispatch: Msg -> unit) =
@@ -56,9 +105,14 @@ let view (model: Model) (dispatch: Msg -> unit) =
         ]
         prop.children [
             NavBar dispatch
-            Html.div [
-                prop.text "abc"
-            ]
+            match model.CurrentPage with
+            | Home ->
+                Html.div [
+                    prop.text "abc"
+                ]
+            | MurderBingoOverview mbm ->
+                MurderBingoOverview.view mbm (MurderBingoOverviewMsg >> dispatch)
+
         ]
 
     ]

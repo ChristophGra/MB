@@ -6,13 +6,13 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <Compile Include="Helpers.fs" />
     <Compile Include="Server.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.fsproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="BCrypt" Version="1.0.0" />
     <PackageReference Include="LiteDB.FSharp" Version="2.16.0" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />

@@ -19,8 +19,12 @@ type AuthenticatedAPICall<'returnValue> = SessionToken -> APICall<'returnValue>
 
 type IMurderBingoApi =
     {
-        AddBingo: string -> AuthenticatedAPICall<BingoGuid>
-        LoadBingo: BingoGuid -> APICall<MurderBingo>
+        AddBingo: string * Guid -> Async<Result<Guid,string>>
+        LoadBingo: Guid -> Async<Guid * string * string list>
+        LoadBingoList: unit -> Async<(string * Guid) list>
+        AddName: string * Guid * Guid-> Async<Result<unit, string>>
+        LoadNames: Guid -> Async<string list>
+        AuthUser: string * string -> Async<Result<Guid, string>>
     }
 
 
